@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kuis PIK Pertemuan 3 - SLR dan Pemetaan Jurnal</title>
+<style>
+:root{--navy:#14305f;--teal:#1b8fa3;--bg:#f2f5fa;--ok:#1d7a4b;--no:#b3261e;--line:#d3dbe8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#1c2433;font:16px/1.55 "Segoe UI",system-ui,Arial,sans-serif}
+header.top{background:var(--navy);color:#fff;padding:18px 20px}
+header.top h1{margin:0;font-size:1.25rem}
+header.top p{margin:2px 0 0;opacity:.8;font-size:.9rem}
+main{max-width:820px;margin:0 auto;padding:18px 14px 50px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:20px;margin-bottom:16px}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input{width:100%;padding:10px;border:1px solid #aab6cb;border-radius:6px;font:inherit}
+input:focus,button:focus-visible{outline:3px solid var(--teal);outline-offset:1px}
+.btn{background:var(--navy);color:#fff;border:0;border-radius:6px;padding:10px 20px;font:inherit;font-weight:600;cursor:pointer}
+.btn.alt{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+.btn:disabled{opacity:.4;cursor:default}
+.err{color:var(--no);font-weight:600;margin-top:10px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0 14px}
+.bar i{display:block;height:100%;background:var(--teal);width:0}
+.meta{display:flex;justify-content:space-between;font-size:.9rem;color:#4a566d}
+.q{font-size:1.1rem;font-weight:600;margin:6px 0 14px}
+.opt{display:flex;gap:10px;width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:6px;padding:11px 12px;margin-bottom:8px;font:inherit;cursor:pointer}
+.opt b{min-width:24px;height:24px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-size:.85rem}
+.opt:hover{border-color:var(--teal)}
+.opt.sel{border-color:var(--navy);background:#e8eefb}
+.opt.sel b{background:var(--navy);color:#fff}
+.nav{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
+.grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.grid button{width:36px;height:36px;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;font:inherit;font-size:.85rem}
+.grid .done{background:#cfe0f7;border-color:var(--navy)}
+.grid .now{outline:3px solid var(--teal)}
+.score{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.big{font-size:3rem;font-weight:700;color:var(--navy);line-height:1}
+.id td{padding:2px 12px 2px 0}
+.rv{border-left:5px solid var(--line);padding:10px 14px;margin:12px 0;background:#fff;border-radius:0 6px 6px 0;break-inside:avoid}
+.rv.ok{border-color:var(--ok)}.rv.no{border-color:var(--no)}
+.rv h4{margin:0 0 6px;font-size:1rem}
+.tag{font-size:.8rem;font-weight:700;padding:1px 8px;border-radius:10px;color:#fff;margin-left:6px}
+.rv.ok .tag{background:var(--ok)}.rv.no .tag{background:var(--no)}
+.ans{font-size:.93rem;margin:2px 0}
+.exp{background:#f2f5fa;padding:8px 10px;border-radius:6px;margin-top:6px;font-size:.93rem}
+.hide{display:none}
+@media print{
+ body{background:#fff;font-size:12px}
+ header.top,.noprint{display:none!important}
+ main{max-width:none;padding:0}
+ .card{border:0;padding:0}
+ .rv{background:#fff}
+ .print-head{display:block!important}
+}
+.print-head{display:none;border-bottom:3px solid var(--navy);margin-bottom:10px;padding-bottom:6px}
+</style>
+</head>
+<body>
+<header class="top">
+ <h1>Kuis Penelitian Ilmu Komputer - Pertemuan 3</h1>
+ <p>Merancang Riset Sistematis: SLR, Pemetaan Jurnal, dan Reference Manager</p>
+</header>
+<main>
+
+<section id="start" class="card">
+ <h2 style="margin-top:0">Data Mahasiswa</h2>
+ <p>Isi identitas sebelum memulai. Kuis terdiri atas 30 soal pilihan ganda dan hanya bisa dikerjakan satu kali per NIM.</p>
+ <label for="nama">Nama lengkap</label>
+ <input id="nama" autocomplete="name">
+ <label for="nim">NIM</label>
+ <input id="nim" inputmode="numeric" autocomplete="off">
+ <label for="prodi">Program studi</label>
+ <input id="prodi" list="pl" placeholder="Pilih atau ketik prodi">
+ <datalist id="pl"><option>Teknik Informatika</option><option>Sistem Informasi</option><option>Teknologi Komputer</option><option>Sistem Informasi Akuntansi</option><option>Teknik Industri</option></datalist>
+ <div id="serr" class="err" role="alert"></div>
+ <p><button class="btn" id="go">Mulai kuis</button></p>
+</section>
+
+<section id="quiz" class="hide">
+ <div class="card">
+  <div class="meta"><span id="who"></span><span id="cnt"></span></div>
+  <div class="bar"><i id="pb"></i></div>
+  <div class="q" id="qt"></div>
+  <div id="ops"></div>
+  <div class="nav">
+   <button class="btn alt" id="prev">Sebelumnya</button>
+   <button class="btn" id="next">Berikutnya</button>
+  </div>
+ </div>
+ <div class="card">
+  <strong>Navigasi soal</strong>
+  <div class="grid" id="grid"></div>
+  <p style="margin:14px 0 0"><button class="btn" id="fin">Selesai dan lihat nilai</button></p>
+ </div>
+</section>
+
+<section id="result" class="hide">
+ <div class="print-head">
+  <h2 style="margin:0;color:var(--navy)">Hasil Kuis PIK Pertemuan 3</h2>
+  <div>Universitas Bina Sarana Informatika - Penelitian Ilmu Komputer</div>
+ </div>
+ <div class="card">
+  <div class="score">
+   <div><div class="big" id="sc"></div><div id="pr"></div></div>
+   <table class="id" id="idt"></table>
+  </div>
+  <p id="sum" style="margin-bottom:0"></p>
+  <p class="noprint" style="margin-bottom:0"><button class="btn" onclick="window.print()">Simpan ke PDF</button>
+  <span style="font-size:.85rem;color:#4a566d"> Pada dialog cetak, pilih "Save as PDF".</span></p>
+ </div>
+ <h3>Pembahasan</h3>
+ <div id="rev"></div>
+</section>
+</main>
+
+<script>
+const Q=[
+["Kutipan Newton \"standing on the shoulders of Giants\" pada awal materi menegaskan bahwa tinjauan pustaka berfungsi untuk...",["Menambah jumlah halaman laporan","Menyalin metode peneliti lain tanpa perubahan","Membangun riset baru di atas fondasi penelitian terdahulu","Menggantikan kebutuhan eksperimen"],2,"Tinjauan pustaka yang kuat menjadi fondasi: riset baru dibangun dari temuan, kelemahan, dan celah penelitian sebelumnya."],
+["Manakah ciri tinjauan pustaka tradisional (naratif)?",["Runtut dan transparan","Subjektif dan rawan bias pemilihan paper","Menggunakan search string eksplisit","Mudah direplikasi oleh peneliti lain"],1,"Tinjauan naratif tidak punya kriteria transparan sehingga subjektif, rawan bias, dan sulit direplikasi."],
+["Ciri utama yang membedakan SLR dari tinjauan pustaka tradisional adalah...",["Paper dipilih berdasarkan selera peneliti","Hanya memakai lima paper teratas dari mesin pencari","Prosesnya runtut, transparan, dan dapat direplikasi (reproducible)","Tidak memerlukan kriteria seleksi"],2,"SLR memakai search string dan kriteria eksplisit sehingga orang lain dapat mengulang prosesnya dan bias diminimalkan."],
+["Tiga fase pada Protokol Kitchenham adalah...",["Planning, Conducting, Reporting","Identifikasi, Skrining, Sintesis","Population, Intervention, Outcomes","Search, Copy, Paste"],0,"Protokol Kitchenham terdiri atas Planning, Conducting, dan Reporting."],
+["Kegiatan pada fase Planning dalam Protokol Kitchenham adalah...",["Menyusun narasi sintesis dan mempublikasikan hasil","Menentukan Research Questions (RQ) dan menyusun protokol tinjauan","Melakukan ekstraksi data dari paper terpilih","Menghapus duplikasi paper"],1,"Planning berisi penentuan RQ dan penyusunan protokol sebelum pencarian dimulai."],
+["Pencarian literatur, seleksi paper, dan ekstraksi data dilakukan pada fase...",["Planning","Reporting","Publishing","Conducting"],3,"Fase Conducting adalah pelaksanaan: mencari, menyeleksi, dan mengekstraksi data."],
+["Kepanjangan PICOC pada pembangunan formula pencarian adalah...",["Paper, Index, Citation, Opinion, Case","Problem, Idea, Concept, Output, Control","Population, Intervention, Comparison, Outcomes, Context","Purpose, Input, Calculation, Output, Conclusion"],2,"PICOC: Population, Intervention, Comparison, Outcomes, Context."],
+["Pada PICOC, huruf C pertama (Comparison) diisi dengan...",["Platform lingkungan seperti Web Apps","Algoritma pembanding (baseline models)","Domain masalah seperti Medical Imagery","Indikator performa seperti Accuracy"],1,"Comparison adalah algoritma pembanding atau baseline model terhadap algoritma yang diteliti."],
+["Accuracy, F1-Score, dan Latency merupakan contoh komponen PICOC yang disebut...",["Population","Intervention","Outcomes","Context"],2,"Outcomes adalah indikator performa yang diukur."],
+["Pada PICOC, XGBoost dan CNN merupakan contoh dari...",["Intervention (algoritma yang diteliti)","Population (domain masalah)","Context (platform lingkungan)","Outcomes (indikator performa)"],0,"Intervention adalah algoritma atau metode yang diteliti, misalnya XGBoost dan CNN."],
+["Menurut materi, basis data internasional dengan standar tertinggi untuk bidang Computer Science adalah...",["IEEE Xplore dan ACM Digital Library","Garuda","Google Scholar","Blog teknologi"],0,"IEEE Xplore dan ACM Digital Library disebut sebagai standar tertinggi CS."],
+["Mengapa Google Scholar diberi tanda peringatan \"Butuh seleksi ketat\"?",["Tidak memuat artikel jurnal","Hanya berisi artikel berbayar","Hanya tersedia untuk dosen","Hasilnya bercampur dari berbagai sumber dengan kualitas beragam"],3,"Google Scholar mengindeks banyak jenis sumber, sehingga peneliti harus menyeleksi kualitasnya sendiri."],
+["SINTA dan Garuda masing-masing berfungsi sebagai...",["Penerbit jurnal dan toko buku","Portal akreditasi jurnal (S1-S6) dan pengindeks karya ilmiah nasional","Reference manager dan mesin plagiarisme","Basis data internasional dan prosiding IEEE"],1,"SINTA adalah portal akreditasi jurnal Kemendikbudristek S1-S6; Garuda mengindeks karya ilmiah nasional."],
+["Urutan tahapan alur PRISMA yang benar adalah...",["Skrining, Identifikasi, Sintesis, Kelayakan","Identifikasi, Skrining, Kelayakan, Sintesis","Kelayakan, Identifikasi, Skrining, Sintesis","Sintesis, Kelayakan, Skrining, Identifikasi"],1,"Alur PRISMA: Identifikasi, Skrining, Kelayakan, lalu Sintesis."],
+["Pada contoh alur PRISMA, pencarian awal menghasilkan 250 paper dan tersisa 60 setelah skrining. Berapa paper yang dieliminasi pada tahap skrining?",["60","40","20","190"],3,"250 - 60 = 190 paper dikeluarkan setelah penghapusan duplikasi dan pengecekan abstrak."],
+["Tahap Kelayakan pada PRISMA dilakukan dengan...",["Mencari paper di database","Menghapus duplikasi saja","Menguji kriteria inklusi/eksklusi pada teks utuh","Menulis daftar pustaka"],2,"Pada tahap kelayakan, paper dibaca teks utuh dan diuji dengan kriteria inklusi/eksklusi (contoh: 60 menjadi 20)."],
+["Manakah yang termasuk kriteria inklusi pada materi?",["Extended abstract atau poster","Full-text tidak dapat diakses","Terbit 5 tahun terakhir (2021-2026) dan mengimplementasikan ML/AI","Metrik evaluasi eksperimen tidak jelas"],2,"Kriteria inklusi: 5 tahun terakhir, implementasi ML/AI, bahasa ID/EN, jurnal Sinta 1-4 atau internasional terindeks."],
+["Paper berikut harus dieksklusi dari SLR, kecuali...",["Poster konferensi","Paper yang full-text-nya tidak bisa diakses","Paper yang tidak menjelaskan metrik evaluasi eksperimennya","Paper jurnal Sinta 3 tahun 2024 yang menerapkan Random Forest dengan metrik jelas"],3,"Paper terakhir memenuhi semua kriteria inklusi; ketiga lainnya masuk kriteria eksklusi."],
+["Kolom \"Kelemahan\" pada ekstraksi data paper terpilih diisi dengan...",["Peringkat Sinta jurnal","Nilai akurasi dan F1-Score","Nama dataset","Research gap yang diakui penulis"],3,"Kelemahan berisi research gap atau keterbatasan yang diakui penulis, bahan untuk menentukan celah riset."],
+["Peringkat Sinta, nama jurnal, tahun, dan penulis termasuk kelompok ekstraksi...",["Bibliografi","Metriks","Substansi","Kelemahan"],0,"Bibliografi mencatat penulis, tahun, jurnal, dan peringkat Sinta."],
+["Pada sintesis, tabel ekstraksi diubah menjadi narasi Bab 2. Narasi yang baik harus...",["Menyalin abstrak setiap paper","Hanya berupa daftar nama penulis","Membandingkan temuan antarpenelitian (metode, hasil, dan keterbatasan) secara mengalir","Menghilangkan angka hasil agar singkat"],2,"Contoh materi membandingkan Pratama (RF, 86%) dan Rahma & Tan (XGBoost, F1 89%) sambil menyebut keterbatasannya."],
+["Berdasarkan hierarki publikasi ilmiah Ilmu Komputer, posisi puncak ditempati oleh...",["Jurnal nasional Sinta 4","Prosiding konferensi internasional","Blog ilmiah","Jurnal internasional bereputasi (Scopus Q1-Q4, Web of Science)"],3,"Puncak piramida adalah jurnal internasional bereputasi, disusul prosiding internasional, lalu jurnal nasional terakreditasi SINTA."],
+["Mengapa jurnal Sinta 3/4 direkomendasikan sebagai target proyek bersama?",["Tidak memerlukan peer review","Standar baik dengan alur relatif cepat dibanding S1/S2","Pasti gratis tanpa syarat","Otomatis terindeks Scopus"],1,"S1/S2 memiliki rejection rate tinggi dan review lama, sedangkan S3/S4 standar baik dengan alur relatif cepat."],
+["Langkah yang benar menavigasi portal SINTA untuk mencari jurnal target adalah...",["Cari di Google lalu pilih yang pertama","Buka halaman journals SINTA, set filter Sinta 4, lalu ketik kata kunci seperti Computer Science/Informatika/Machine Learning","Langsung mengirim naskah ke semua jurnal","Memilih jurnal berdasarkan warna situs"],1,"Urutannya: buka portal journals SINTA, set filter ke target (S4), kemudian cari dengan kata kunci bidang."],
+["Indikator \"Kecepatan\" dalam memilih jurnal target dinilai dengan cara...",["Menghitung jumlah iklan pada situs","Melihat banyaknya editor","Mengecek turnaround time dari Received ke Accepted pada archive terdahulu","Melihat desain logo jurnal"],2,"Turnaround time dari tanggal Received ke Accepted di archive menunjukkan kecepatan proses review."],
+["Dari empat indikator memilih jurnal, \"Stabilitas\" dan \"Kesesuaian\" masing-masing berarti...",["Terbit 2-4 kali setahun; mengikuti template","Status OJS aktif; Focus and Scope sesuai topik riset","Biaya murah; peringkat tertinggi","Banyak pembaca; banyak iklan"],1,"Stabilitas = OJS aktif (tidak down/mati); Kesesuaian = Focus and Scope menerima topik Computational Intelligence/Applied CS."],
+["Manakah ciri jurnal predator menurut materi?",["Terdaftar resmi di SINTA dengan OJS stabil","Biaya publikasi (APC) sangat mahal tanpa peer review yang wajar","Peer review transparan dan terjadwal","Terbit rutin dengan archive lengkap"],1,"Ciri lain: situs OJS berantakan dengan banyak broken links, serta tidak terdaftar resmi di SINTA (Unaccredited/Discontinued)."],
+["Aturan mutlak penulisan sitasi pada materi adalah...",["Daftar pustaka boleh diketik manual jika sedikit","Dilarang memasukkan daftar pustaka secara manual; wajib memakai Reference Manager","Sitasi cukup berupa tautan Google","Daftar pustaka dihapus jika jurnal Sinta 4"],1,"Penggunaan Reference Manager adalah persyaratan mutlak untuk menembus jurnal bereputasi, bukan sekadar imbauan."],
+["Keunggulan \"Style Switching\" pada Reference Manager adalah...",["Mengubah gaya sitasi (misalnya APA ke IEEE) secara instan sesuai template jurnal target","Mengubah topik penelitian otomatis","Menerjemahkan paper ke bahasa Indonesia","Menghapus plagiarisme"],0,"Style switching memungkinkan perpindahan gaya sitasi dalam sekali klik tanpa mengetik ulang."],
+["Fungsi Web Connector pada Mendeley/Zotero adalah...",["Menyimpan dan mengelompokkan proyek di komputer","Menyisipkan sitasi di MS Word","Menjadi ekstensi browser yang menyedot metadata dan PDF otomatis","Memberi highlight pada PDF"],2,"Web Connector adalah ekstensi browser; Desktop Library untuk menyimpan, Word Plugin untuk sitasi, PDF Annotator untuk highlight dan notes."],
+["Manakah jebakan umum (common pitfalls) yang disebutkan pada materi?",["Memakai paper AI/ML terbaru dari jurnal Sinta 4","Mengikuti template jurnal target","Menggunakan paper AI/ML di bawah tahun 2018 karena metodenya sudah usang","Menyusun protokol inklusi sebelum pencarian"],2,"Pitfalls lain: pencarian acak tanpa protokol, target tidak realistis (Sinta 1/Q1 yang bisa review 8 bulan), dan mengabaikan template."]
+];
+const $=id=>document.getElementById(id);
+const L="ABCD";
+let user={},ans=Array(Q.length).fill(-1),cur=0;
+const key=n=>"pik3_"+n;
+function show(id){["start","quiz","result"].forEach(x=>$(x).classList.toggle("hide",x!==id));window.scrollTo(0,0)}
+function load(n){try{return JSON.parse(localStorage.getItem(key(n)))}catch(e){return null}}
+function save(r){try{localStorage.setItem(key(r.nim),JSON.stringify(r))}catch(e){}}
+$("go").onclick=()=>{
+ const nama=$("nama").value.trim(),nim=$("nim").value.trim(),prodi=$("prodi").value.trim();
+ if(!nama||!nim||!prodi){$("serr").textContent="Nama, NIM, dan program studi wajib diisi.";return}
+ if(!/^\d{6,}$/.test(nim)){$("serr").textContent="NIM harus berupa angka (minimal 6 digit).";return}
+ const old=load(nim);
+ if(old){user=old;ans=old.ans;finish(true);return}
+ user={nama,nim,prodi};$("serr").textContent="";
+ $("who").textContent=nama+" - "+nim;
+ buildGrid();render();show("quiz");
+};
+function render(){
+ $("cnt").textContent="Soal "+(cur+1)+" dari "+Q.length;
+ $("pb").style.width=((cur+1)/Q.length*100)+"%";
+ $("qt").textContent=(cur+1)+". "+Q[cur][0];
+ $("ops").innerHTML="";
+ Q[cur][1].forEach((t,i)=>{
+  const b=document.createElement("button");
+  b.className="opt"+(ans[cur]===i?" sel":"");
+  b.innerHTML="<b>"+L[i]+"</b><span></span>";
+  b.lastChild.textContent=t;
+  b.onclick=()=>{ans[cur]=i;render();buildGrid()};
+  $("ops").appendChild(b);
+ });
+ $("prev").disabled=cur===0;
+ $("next").disabled=cur===Q.length-1;
+ buildGrid();
+}
+function buildGrid(){
+ $("grid").innerHTML="";
+ Q.forEach((_,i)=>{
+  const b=document.createElement("button");
+  b.textContent=i+1;
+  b.className=(ans[i]>=0?"done ":"")+(i===cur?"now":"");
+  b.setAttribute("aria-label","Soal "+(i+1));
+  b.onclick=()=>{cur=i;render()};
+  $("grid").appendChild(b);
+ });
+}
+$("prev").onclick=()=>{if(cur>0){cur--;render()}};
+$("next").onclick=()=>{if(cur<Q.length-1){cur++;render()}};
+$("fin").onclick=()=>{
+ const k=ans.filter(a=>a<0).length;
+ if(k&&!confirm(k+" soal belum dijawab. Tetap selesaikan kuis? Kuis tidak bisa diulang.")) return;
+ if(!k&&!confirm("Selesaikan kuis sekarang? Kuis tidak bisa diulang.")) return;
+ finish(false);
+};
+function finish(again){
+ let benar=0,kosong=0;
+ Q.forEach((q,i)=>{if(ans[i]<0)kosong++;else if(ans[i]===q[2])benar++});
+ const nilai=Math.round(benar/Q.length*1000)/10;
+ if(!again){user.ans=ans;user.waktu=new Date().toLocaleString("id-ID");save(user)}
+ const tgl=user.waktu||new Date().toLocaleString("id-ID");
+ $("sc").textContent=nilai;
+ $("pr").textContent=nilai>=80?"Sangat baik":nilai>=70?"Baik":nilai>=60?"Cukup":"Perlu belajar lagi";
+ $("idt").innerHTML="";
+ [["Nama",user.nama],["NIM",user.nim],["Prodi",user.prodi],["Waktu",tgl]].forEach(r=>{
+  const tr=document.createElement("tr");tr.innerHTML="<td><b>"+r[0]+"</b></td><td></td>";tr.lastChild.textContent=r[1];$("idt").appendChild(tr)});
+ $("sum").textContent="Benar: "+benar+"  |  Salah: "+(Q.length-benar-kosong)+"  |  Tidak dijawab: "+kosong+"  |  Total: "+Q.length+" soal"+(again?"  (kuis ini sudah pernah dikerjakan; hasil tersimpan ditampilkan kembali)":"");
+ $("rev").innerHTML="";
+ Q.forEach((q,i)=>{
+  const ok=ans[i]===q[2],d=document.createElement("div");
+  d.className="rv "+(ok?"ok":"no");
+  const h=document.createElement("h4");h.textContent=(i+1)+". "+q[0];
+  const t=document.createElement("span");t.className="tag";t.textContent=ok?"Benar":(ans[i]<0?"Kosong":"Salah");h.appendChild(t);
+  const a=document.createElement("div");a.className="ans";
+  a.textContent="Jawaban Anda: "+(ans[i]<0?"-":L[ans[i]]+". "+q[1][ans[i]]);
+  const c=document.createElement("div");c.className="ans";
+  c.textContent="Jawaban benar: "+L[q[2]]+". "+q[1][q[2]];
+  const e=document.createElement("div");e.className="exp";e.textContent="Pembahasan: "+q[3];
+  d.append(h,a,c,e);$("rev").appendChild(d);
+ });
+ document.title="Hasil_Kuis_PIK3_"+user.nim+"_"+user.nama.replace(/\s+/g,"_");
+ show("result");
+}
+</script>
+</body>
+</html>
